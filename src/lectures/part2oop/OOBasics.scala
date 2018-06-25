@@ -11,6 +11,10 @@ object OOBasics extends App {
 
   println(person.age)
 
+  val counter = new Counter()
+
+  counter.inc().print()
+  counter.inc(3).print()
 }
 
 class Person(name: String, val age: Int) {
@@ -59,3 +63,23 @@ class Novel(val name: String, val yearOfRelease: Int, var author: Writer) {
   def copy(newYearOfRelease: Int): Novel = new Novel(name, newYearOfRelease, author)
 }
 
+class Counter(val currentValue: Int = 0) {
+
+  def inc(): Counter = {
+    println("Incrementing")
+    new Counter(this.currentValue + 1)
+  }
+  def dec(): Counter = {
+    println("Decrementing")
+    new Counter(this.currentValue - 1)
+  }
+  def inc(incBy: Int): Counter =
+    if (incBy <= 0) this
+    else inc().inc(incBy - 1)
+
+  def dec(decBy: Int): Counter =
+    if (decBy <= 0) this
+    else dec().dec(decBy - 1)
+
+  def print(): Unit = println(this.currentValue)
+}
