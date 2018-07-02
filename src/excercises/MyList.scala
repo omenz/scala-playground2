@@ -9,9 +9,9 @@ abstract class MyList[+A]() {
   def isEmpty: Boolean
   def add[B >: A](element: B): MyList[B]
   def printElements: String
-  def map[T >: A, B](transformer: MyTransformer[T, B]): MyList[B]
-  def flatMap[T >: A, B](transformer: MyTransformer[T, MyList[B]]): MyList[B]
-  def filter[B >: A](predicate: MyPredicate[B]): MyList[B]
+  def map[B](transformer: MyTransformer[A, B]): MyList[B]
+  def flatMap[B](transformer: MyTransformer[A, MyList[B]]): MyList[B]
+  def filter(predicate: MyPredicate[A]): MyList[A]
   //polymorphic call
   override def toString: String = s"[$printElements]"
 }
@@ -22,9 +22,9 @@ object Empty extends MyList[Nothing] {
   override def isEmpty: Boolean = true
   override def add[B >: Nothing](element: B): MyList[B] = new Cons(element, Empty)
   override def printElements: String = ""
-  override def map[T >: Nothing, B](transformer: MyTransformer[T, B]): MyList[B] = Empty
-  def flatMap[T >: Nothing, B](transformer: MyTransformer[T, MyList[B]]): MyList[B] = Empty
-  override def filter[B >: Nothing](predicate: MyPredicate[B]): MyList[Nothing] = Empty
+  override def map[B](transformer: MyTransformer[Nothing, B]): MyList[B] = Empty
+  def flatMap[B](transformer: MyTransformer[Nothing, MyList[B]]): MyList[B] = Empty
+  override def filter(predicate: MyPredicate[Nothing]): MyList[Nothing] = Empty
 }
 
 class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
@@ -37,7 +37,7 @@ class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
     if (t.isEmpty) "" + h
     else h + " " + t.printElements
 
-  override def map[T >: A, B](transformer: MyTransformer[T, B]): MyList[B] = {
+  override def map[B](transformer: MyTransformer[A, B]): MyList[B] = {
     def transformHelper(list: MyList[A], accumulator: MyList[B]): MyList[B] = {
       if (list.isEmpty) {
         accumulator
@@ -50,7 +50,7 @@ class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
   }
 
 
-  def flatMap[T >: A, B](transformer: MyTransformer[T, MyList[B]]): MyList[B] = {
+  def flatMap[B](transformer: MyTransformer[A, MyList[B]]): MyList[B] = {
     def transformHelper(list: MyList[A], accumulator: MyList[B]): MyList[B] = {
       if (list.isEmpty) {
         accumulator
@@ -69,8 +69,8 @@ class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
     transformHelper(this, Empty)
   }
 
-  override def filter[B >: A](predicate: MyPredicate[B]): MyList[B] = {
-    def filterHelper(list: MyList[A], accumulator: MyList[B]): MyList[B] = {
+  override def filter(predicate: MyPredicate[A]): MyList[A] = {
+    def filterHelper(list: MyList[A], accumulator: MyList[A]): MyList[A] = {
       if (list.isEmpty) {
         accumulator
       } else {
