@@ -10,6 +10,7 @@ abstract class MyList[+A]() {
   def add[B >: A](element: B): MyList[B]
   def printElements: String
   def map[T >: A, B](transformer: MyTransformer[T, B]): MyList[B]
+  def flatMap[T >: A, B](transformer: MyTransformer[T, MyList[B]]): MyList[B]
   def filter[B >: A](predicate: MyPredicate[B]): MyList[B]
   //polymorphic call
   override def toString: String = s"[$printElements]"
@@ -22,6 +23,7 @@ object Empty extends MyList[Nothing] {
   override def add[B >: Nothing](element: B): MyList[B] = new Cons(element, Empty)
   override def printElements: String = ""
   override def map[T >: Nothing, B](transformer: MyTransformer[T, B]): MyList[B] = Empty
+  def flatMap[T >: Nothing, B](transformer: MyTransformer[T, MyList[B]]): MyList[B] = Empty
   override def filter[B >: Nothing](predicate: MyPredicate[B]): MyList[Nothing] = Empty
 }
 
@@ -41,8 +43,28 @@ class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
         accumulator
       } else {
         val mapped = transformer(list.head)
-        transformHelper(list.tail, new Cons(mapped, accumulator))
+        transformHelper(list.tail, new Cons[B](mapped, accumulator))
       }
+    }
+    transformHelper(this, Empty)
+  }
+
+
+  def flatMap[T >: A, B](transformer: MyTransformer[T, MyList[B]]): MyList[B] = {
+    def transformHelper(list: MyList[A], accumulator: MyList[B]): MyList[B] = {
+      if (list.isEmpty) {
+        accumulator
+      } else {
+        val mapped = transformer(list.head)
+        val accumulatorWithMappedList = addAllToList(mapped, accumulator)
+        transformHelper(list.tail, accumulatorWithMappedList)
+      }
+    }
+    def addAllToList(src: MyList[B], dst: MyList[B]): MyList[B] = {
+      if (src.isEmpty)
+        dst
+      else
+        addAllToList(src.tail, dst.add(src.head))
     }
     transformHelper(this, Empty)
   }
@@ -75,8 +97,14 @@ object ListTest extends App {
   val transformer: MyTransformer[Int, String] = new MyTransformer[Int, String] {
     override def apply[T >: Int](element: T): String = element.toString
   }
+
+  val flatMapTransformer: MyTransformer[Int, MyList[String]] = new MyTransformer[Int, MyList[String]] {
+    override def apply[Int](element: Int): MyList[String] = new Cons(element.toString, new Cons[String](44.toString, Empty))
+  }
+
   val filter: MyPredicate[Int] = (element: Int) => element == 2
   println(list.map(transformer))
+  println(list.flatMap(flatMapTransformer))
   println(list.filter(filter))
 }
 
