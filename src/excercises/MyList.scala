@@ -9,16 +9,18 @@ abstract class MyList[+A]() {
   def isEmpty: Boolean
   def add[B >: A](element: B): MyList[B]
   def printElements: String
+  def map[T >: A, B](transformer: MyTransformer[T, B]): MyList[B]
   //polymorphic call
   override def toString: String = s"[$printElements]"
 }
 
 object Empty extends MyList[Nothing] {
-  override def head: Nothing= throw new NoSuchElementException
+  override def head: Nothing = throw new NoSuchElementException
   override def tail: MyList[Nothing] = throw new NoSuchElementException
   override def isEmpty: Boolean = true
   override def add[B >: Nothing](element: B): MyList[B] = new Cons(element, Empty)
   override def printElements: String = ""
+  override def map[T >: Nothing, B](transformer: MyTransformer[T, B]): MyList[B] = Empty
 }
 
 class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
@@ -30,6 +32,17 @@ class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
   override def printElements: String =
     if (t.isEmpty) "" + h
     else h + " " + t.printElements
+  override def map[T >: A, B](transformer: MyTransformer[T, B]): MyList[B] = {
+    def transformHelper(list: MyList[A], accumulator: MyList[B]): MyList[B] = {
+      if (list.isEmpty) {
+        accumulator
+      } else {
+        val mapped = transformer(list.head)
+        transformHelper(list.tail, new Cons(mapped, accumulator))
+      }
+    }
+    transformHelper(this, Empty)
+  }
 }
 
 
@@ -41,4 +54,18 @@ object ListTest extends App {
   println(list.isEmpty)
   println(list)
   println(listOfStrings)
+
+  val transformer: MyTransformer[Int, String] = new MyTransformer[Int, String] {
+    override def apply[T >: Int](element: T): String = element.toString
+  }
+  println(list.map(transformer))
+
+}
+
+trait MyPredicate[T] {
+  def test(element: T): Boolean
+}
+
+trait MyTransformer[+A, B] {
+  def apply[T >: A](element: T): B
 }
