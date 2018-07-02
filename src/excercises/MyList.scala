@@ -12,6 +12,7 @@ abstract class MyList[+A]() {
   def map[B](transformer: MyTransformer[A, B]): MyList[B]
   def flatMap[B](transformer: MyTransformer[A, MyList[B]]): MyList[B]
   def filter(predicate: MyPredicate[A]): MyList[A]
+  def ++[B >: A](list: MyList[B]): MyList[B]
   //polymorphic call
   override def toString: String = s"[$printElements]"
 }
@@ -25,6 +26,7 @@ object Empty extends MyList[Nothing] {
   override def map[B](transformer: MyTransformer[Nothing, B]): MyList[B] = Empty
   def flatMap[B](transformer: MyTransformer[Nothing, MyList[B]]): MyList[B] = Empty
   override def filter(predicate: MyPredicate[Nothing]): MyList[Nothing] = Empty
+  override def ++[B >: Nothing](list: MyList[B]): MyList[B] = list
 }
 
 class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
@@ -38,50 +40,20 @@ class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
     else h + " " + t.printElements
 
   override def map[B](transformer: MyTransformer[A, B]): MyList[B] = {
-    def transformHelper(list: MyList[A], accumulator: MyList[B]): MyList[B] = {
-      if (list.isEmpty) {
-        accumulator
-      } else {
-        val mapped = transformer(list.head)
-        transformHelper(list.tail, new Cons[B](mapped, accumulator))
-      }
-    }
-    transformHelper(this, Empty)
+    new Cons(transformer(h), tail.map(transformer))
   }
 
-
   def flatMap[B](transformer: MyTransformer[A, MyList[B]]): MyList[B] = {
-    def transformHelper(list: MyList[A], accumulator: MyList[B]): MyList[B] = {
-      if (list.isEmpty) {
-        accumulator
-      } else {
-        val mapped = transformer(list.head)
-        val accumulatorWithMappedList = addAllToList(mapped, accumulator)
-        transformHelper(list.tail, accumulatorWithMappedList)
-      }
-    }
-    def addAllToList(src: MyList[B], dst: MyList[B]): MyList[B] = {
-      if (src.isEmpty)
-        dst
-      else
-        addAllToList(src.tail, dst.add(src.head))
-    }
-    transformHelper(this, Empty)
+    transformer(h) ++ t.flatMap(transformer)
   }
 
   override def filter(predicate: MyPredicate[A]): MyList[A] = {
-    def filterHelper(list: MyList[A], accumulator: MyList[A]): MyList[A] = {
-      if (list.isEmpty) {
-        accumulator
-      } else {
-        if (predicate(list.head))
-          filterHelper(list.tail, new Cons(list.head, accumulator))
-        else
-          filterHelper(list.tail, accumulator)
-      }
-    }
-    filterHelper(this, Empty)
+    if (predicate(h)) new Cons(h, t.filter(predicate))
+    else t.filter(predicate)
   }
+
+  override def ++[B >: A](list: MyList[B]): MyList[B] =
+    new Cons[B](h, t ++ list)
 }
 
 
