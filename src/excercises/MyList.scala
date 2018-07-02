@@ -94,13 +94,10 @@ object ListTest extends App {
   println(list)
   println(listOfStrings)
 
-  val transformer: MyTransformer[Int, String] = new MyTransformer[Int, String] {
-    override def apply[T >: Int](element: T): String = element.toString
-  }
+  val transformer: MyTransformer[Int, String] = (element: Int) => element.toString
 
-  val flatMapTransformer: MyTransformer[Int, MyList[String]] = new MyTransformer[Int, MyList[String]] {
-    override def apply[Int](element: Int): MyList[String] = new Cons(element.toString, new Cons[String](44.toString, Empty))
-  }
+  val flatMapTransformer: MyTransformer[Int, MyList[String]] = (element: Int) =>
+    new Cons(element.toString, new Cons[String]((element + 1).toString, Empty))
 
   val filter: MyPredicate[Int] = (element: Int) => element == 2
   println(list.map(transformer))
@@ -108,10 +105,10 @@ object ListTest extends App {
   println(list.filter(filter))
 }
 
-trait MyPredicate[T] {
+trait MyPredicate[-T] {
   def apply(element: T): Boolean
 }
 
-trait MyTransformer[+A, B] {
-  def apply[T >: A](element: T): B
+trait MyTransformer[-A, B] {
+  def apply(element: A): B
 }
