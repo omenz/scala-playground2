@@ -17,7 +17,7 @@ abstract class MyList[+A]() {
   override def toString: String = s"[$printElements]"
 }
 
-object Empty extends MyList[Nothing] {
+case object Empty extends MyList[Nothing] {
   override def head: Nothing = throw new NoSuchElementException
   override def tail: MyList[Nothing] = throw new NoSuchElementException
   override def isEmpty: Boolean = true
@@ -29,7 +29,7 @@ object Empty extends MyList[Nothing] {
   override def ++[B >: Nothing](list: MyList[B]): MyList[B] = list
 }
 
-class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
+case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
   override def head: A = h
   override def tail: MyList[A] = t
   override def isEmpty: Boolean = false
@@ -59,6 +59,7 @@ class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
 
 object ListTest extends App {
   val list: MyList[Int] = new Cons(1, new Cons(2, new Cons(3, Empty)))
+  val listClone: MyList[Int] = new Cons(1, new Cons(2, new Cons(3, Empty)))
   val listOfStrings: MyList[String] = new Cons("pew", new Cons("pew2", new Cons("pew3", Empty)))
   println(list.tail.head)
   println(list.add(4).head)
@@ -75,6 +76,9 @@ object ListTest extends App {
   println(list.map(transformer))
   println(list.flatMap(flatMapTransformer))
   println(list.filter(filter))
+
+  //works thanks to case class
+  println(list == listClone)
 }
 
 trait MyPredicate[-T] {
