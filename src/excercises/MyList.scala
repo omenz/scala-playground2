@@ -10,6 +10,7 @@ abstract class MyList[+A]() {
   def add[B >: A](element: B): MyList[B]
   def printElements: String
   def map[T >: A, B](transformer: MyTransformer[T, B]): MyList[B]
+  def filter[B >: A](predicate: MyPredicate[B]): MyList[B]
   //polymorphic call
   override def toString: String = s"[$printElements]"
 }
@@ -21,6 +22,7 @@ object Empty extends MyList[Nothing] {
   override def add[B >: Nothing](element: B): MyList[B] = new Cons(element, Empty)
   override def printElements: String = ""
   override def map[T >: Nothing, B](transformer: MyTransformer[T, B]): MyList[B] = Empty
+  override def filter[B >: Nothing](predicate: MyPredicate[B]): MyList[Nothing] = Empty
 }
 
 class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
@@ -32,6 +34,7 @@ class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
   override def printElements: String =
     if (t.isEmpty) "" + h
     else h + " " + t.printElements
+
   override def map[T >: A, B](transformer: MyTransformer[T, B]): MyList[B] = {
     def transformHelper(list: MyList[A], accumulator: MyList[B]): MyList[B] = {
       if (list.isEmpty) {
@@ -42,6 +45,20 @@ class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
       }
     }
     transformHelper(this, Empty)
+  }
+
+  override def filter[B >: A](predicate: MyPredicate[B]): MyList[B] = {
+    def filterHelper(list: MyList[A], accumulator: MyList[B]): MyList[B] = {
+      if (list.isEmpty) {
+        accumulator
+      } else {
+        if (predicate(list.head))
+          filterHelper(list.tail, new Cons(list.head, accumulator))
+        else
+          filterHelper(list.tail, accumulator)
+      }
+    }
+    filterHelper(this, Empty)
   }
 }
 
@@ -58,12 +75,13 @@ object ListTest extends App {
   val transformer: MyTransformer[Int, String] = new MyTransformer[Int, String] {
     override def apply[T >: Int](element: T): String = element.toString
   }
+  val filter: MyPredicate[Int] = (element: Int) => element == 2
   println(list.map(transformer))
-
+  println(list.filter(filter))
 }
 
 trait MyPredicate[T] {
-  def test(element: T): Boolean
+  def apply(element: T): Boolean
 }
 
 trait MyTransformer[+A, B] {
