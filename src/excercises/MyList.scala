@@ -14,6 +14,9 @@ abstract class MyList[+A]() {
   def flatMap[B](transformer: A => MyList[B]): MyList[B]
   def filter(predicate: A => Boolean): MyList[A]
   def ++[B >: A](list: MyList[B]): MyList[B]
+  def forEach(fn: A => Unit): Unit
+  def sort(compare: (A, A) => Int): MyList[A]
+  def zipWith[B, C](list: MyList[B], zip: (A, B) => C): MyList[C]
   //polymorphic call
   override def toString: String = s"[$printElements]"
 }
@@ -28,6 +31,11 @@ case object Empty extends MyList[Nothing] {
   def flatMap[B](transformer: Nothing => MyList[B]): MyList[B] = Empty
   override def filter(predicate: Nothing => Boolean): MyList[Nothing] = Empty
   override def ++[B >: Nothing](list: MyList[B]): MyList[B] = list
+  override def forEach(fn: Nothing => Unit): Unit = {}
+  override def sort(compare: (Nothing, Nothing) => Int): MyList[Nothing] = this
+  override def zipWith[B, C](list: MyList[B], zip: (Nothing, B) => C): MyList[C] =
+    if (!list.isEmpty) throw new RuntimeException("Lists do not have the same length")
+    else Empty
 }
 
 case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
@@ -55,6 +63,24 @@ case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
 
   override def ++[B >: A](list: MyList[B]): MyList[B] =
     new Cons[B](h, t ++ list)
+
+  override def forEach(fn: A => Unit): Unit = {
+    fn(h)
+    t.forEach(fn)
+  }
+
+  override def sort(compare: (A, A) => Int): MyList[A] = {
+    def insert(x: A, sortedList: MyList[A]): MyList[A] =
+      if (sortedList.isEmpty) new Cons[A](x, Empty)
+      else if (compare(x, sortedList.head) <= 0) Cons(x, sortedList)
+      else Cons(sortedList.head, insert(x, sortedList.tail))
+
+    val sortedTail = t.sort(compare)
+    insert(h, sortedTail)
+  }
+  override def zipWith[B, C](list: MyList[B], zip: (A, B) => C): MyList[C] =
+    if (list.isEmpty) throw new RuntimeException("Lists do not have the same length")
+    else Cons(zip(h, list.head), t.zipWith(list.tail, zip))
 }
 
 
@@ -62,6 +88,7 @@ object ListTest extends App {
   val list: MyList[Int] = Cons(1, Cons(2, Cons(3, Empty)))
   val listClone: MyList[Int] = Cons(1, Cons(2, Cons(3, Empty)))
   val listOfStrings: MyList[String] = Cons("pew", Cons("pew2", Cons("pew3", Empty)))
+  val listOfStrings2: MyList[String] = Cons("pew", Cons("pew2", Cons("pew3", Empty)))
   println(list.tail.head)
   println(list.add(4).head)
   println(list.isEmpty)
@@ -80,5 +107,8 @@ object ListTest extends App {
 
   //works thanks to case class
   println(list == listClone)
+
+  println(list.forEach(println(_)))
+  println(listOfStrings.zipWith[String, String](listOfStrings2, _ + " " + _))
 }
 
