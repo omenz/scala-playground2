@@ -68,12 +68,12 @@ object ListTest extends App {
   println(list)
   println(listOfStrings)
 
-  val transformer: Int => String = element => element.toString
+  val transformer: Int => String = _.toString
 
   val flatMapTransformer: Int => MyList[String] =
     element => Cons(element.toString, new Cons[String]((element + 1).toString, Empty))
 
-  val filter: Int => Boolean = element => element == 2
+  val filter: Int => Boolean = _ == 2
   println(list.map(transformer))
   println(list.flatMap(flatMapTransformer))
   println(list.filter(filter))
