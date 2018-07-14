@@ -17,6 +17,7 @@ abstract class MyList[+A]() {
   def forEach(fn: A => Unit): Unit
   def sort(compare: (A, A) => Int): MyList[A]
   def zipWith[B, C](list: MyList[B], zip: (A, B) => C): MyList[C]
+  def fold[B](start: B)(operator: (B, A) => B): B
   //polymorphic call
   override def toString: String = s"[$printElements]"
 }
@@ -36,6 +37,7 @@ case object Empty extends MyList[Nothing] {
   override def zipWith[B, C](list: MyList[B], zip: (Nothing, B) => C): MyList[C] =
     if (!list.isEmpty) throw new RuntimeException("Lists do not have the same length")
     else Empty
+  override def fold[B](start: B)(operator: (B, Nothing) => B): B = start
 }
 
 case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
@@ -81,6 +83,10 @@ case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
   override def zipWith[B, C](list: MyList[B], zip: (A, B) => C): MyList[C] =
     if (list.isEmpty) throw new RuntimeException("Lists do not have the same length")
     else Cons(zip(h, list.head), t.zipWith(list.tail, zip))
+
+  override def fold[B](start: B)(operator: (B, A) => B): B =
+    t.fold(operator(start, h))(operator)
+
 }
 
 
@@ -110,5 +116,34 @@ object ListTest extends App {
 
   println(list.forEach(println(_)))
   println(listOfStrings.zipWith[String, String](listOfStrings2, _ + " " + _))
+  println(list.fold(0)(_ + _))
+
+
+  def toCurry(f: (Int, Int) => Int): Int => Int => Int =
+    x => y => f(x, y)
+
+  def fromCurry(f: Int => Int => Int): (Int, Int) => Int =
+    (x, y) => f(x)(y)
+
+  def compose[A, B, T](f: A => B, g: T => A): T => B =
+    x => f(g(x))
+
+  def andThen[A, B, C](f: A => B, g: B => C): A => C =
+    x => g(f(x))
+
+  def superAdder: Int => Int => Int = toCurry(_ + _)
+  def add4 = superAdder(4)
+  print(add4(17))
+
+  val simpleAdder = fromCurry(superAdder)
+  println(simpleAdder(4, 17))
+
+  val add2 = (x: Int) => x + 2
+  val times3 = (x: Int) => x * 3
+  val composed = compose(add2, times3)
+  val ordered = andThen(add2, times3)
+
+  println(composed(4))
+  println(ordered(4))
 }
 
