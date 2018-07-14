@@ -7,7 +7,7 @@ object MapFlatmapFilterFor extends App {
   println(list.head)
   println(list.tail)
 
-  println(list.map(_ + 1))               `
+  println(list.map(_ + 1))
 
   println(list.filter(_ % 2 == 0))
 

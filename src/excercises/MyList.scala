@@ -145,5 +145,12 @@ object ListTest extends App {
 
   println(composed(4))
   println(ordered(4))
+
+  //it supports comprehension because it has map, flatMap and filter methods implemented
+  print("Comprehension: ")
+  val comprehensionTest = for {
+    n <- list
+  } yield print(n + " ")
+
 }
 
