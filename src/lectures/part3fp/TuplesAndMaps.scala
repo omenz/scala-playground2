@@ -1,5 +1,7 @@
 package lectures.part3fp
 
+import scala.annotation.tailrec
+
 object TuplesAndMaps extends App {
 
   // tuples = finite ordered "lists"
@@ -91,9 +93,16 @@ object SocialNetworkApp extends App {
 
 case class SocialNetwork(network: Map[String, Set[String]] = Map()) {
 
-  def add(person: String): SocialNetwork = SocialNetwork(network + (person -> Set()))
+  def add(person: String) = SocialNetwork(network + (person -> Set()))
+
+  def friend(a: String, b: String) =
+    SocialNetwork(network + (a -> (network(a) + b)) + (b -> (network(b) + a)))
+
+  def unfriend(a: String, b: String) =
+    SocialNetwork(network + (a -> (network(a) - b)) +  (b -> (network(b) - a)))
 
   def remove(person: String): SocialNetwork = {
+    @tailrec
     def removeAux(friends: Set[String], networkAcc: SocialNetwork): SocialNetwork =
       if (friends.isEmpty) networkAcc
       else removeAux(friends.tail, networkAcc.unfriend(person, friends.head))
@@ -101,25 +110,18 @@ case class SocialNetwork(network: Map[String, Set[String]] = Map()) {
     SocialNetwork(unfriended.network - person)
   }
 
-  def friend(a: String, b: String): SocialNetwork =
-    SocialNetwork(network + (a -> (network(a) + b)) + (b -> (network(b) + a)))
-
-  def unfriend(a: String, b: String): SocialNetwork =
-    SocialNetwork(network + (a -> (network(a) - b)) +  (b -> (network(b) - a)))
-
   def friendsCount(person: String): Int = network(person).size
 
   def mostFriends: (String, Set[String]) = network.maxBy(_._2.size)
 
   def peopleWithNoFriendsCount: Int = network.count(_._2.isEmpty)
 
-  def isThereAConnection(person1: String, person2: String): Boolean = {
-    if (network(person1).contains(person2)) true
-    else network(person1)
+  def isThereAConnection(personA: String, personB: String): Boolean = {
+    if (network(personA).contains(personB)) true
+    else network(personA)
       .flatMap(network(_))
-      .contains(person2)
+      .contains(personB)
   }
 
   def print(): Unit = println(network)
-
 }
