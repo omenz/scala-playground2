@@ -54,51 +54,53 @@ object TuplesAndMaps extends App {
 
 object SocialNetworkApp extends App {
 
-  SocialNetwork.add("Peter")
-  SocialNetwork.add("John")
-  SocialNetwork.add("Sue")
-  SocialNetwork.add("Jenny")
-  SocialNetwork.add("Chloe")
-  SocialNetwork.add("Bob")
-  SocialNetwork.print()
+  var network = SocialNetwork()
 
-  SocialNetwork.remove("Sue")
-  SocialNetwork.print()
+  network = network.add("Peter")
+  network = network.add("John")
+  network = network.add("Sue")
+  network = network.add("Jenny")
+  network = network.add("Chloe")
+  network = network.add("Bob")
+  network.print()
 
-  SocialNetwork.friend("Peter", "John")
-  SocialNetwork.friend("Peter", "Jenny")
-  SocialNetwork.friend("Peter", "Chloe")
-  SocialNetwork.friend("John", "Jenny")
-  SocialNetwork.print()
+  network = network.remove("Sue")
+  network.print()
 
-  SocialNetwork.unfriend("Jenny", "Peter")
-  SocialNetwork.print()
+  network = network.friend("Peter", "John")
+  network = network.friend("Peter", "Jenny")
+  network = network.friend("Peter", "Chloe")
+  network = network.friend("John", "Jenny")
+  network.print()
 
-  println(SocialNetwork.friendsCount("Peter"))
-  println(SocialNetwork.friendsCount("Jenny"))
+  network = network.unfriend("Jenny", "Peter")
+  network.print()
 
-  println(SocialNetwork.mostFriends)
+  println(network.friendsCount("Peter"))
+  println(network.friendsCount("Jenny"))
 
-  println(SocialNetwork.peopleWithNoFriendsCount)
+  println(network.mostFriends)
 
-  println(SocialNetwork.isThereAConnection("Peter", "John"))
-  println(SocialNetwork.isThereAConnection("Peter", "Bob"))
+  println(network.peopleWithNoFriendsCount)
+
+  println(network.isThereAConnection("Peter", "John"))
+  println(network.isThereAConnection("Peter", "Bob"))
 }
 
 
-object SocialNetwork {
+case class SocialNetwork(network: Map[String, Set[String]] = Map()) {
 
-  private var network: Map[String, Set[String]] = Map()
+  def add(person: String): SocialNetwork = SocialNetwork(network + (person -> Set()))
 
-  def add(person: String): Unit = network = network + (person -> Set())
+  def remove(person: String): SocialNetwork = {
+    SocialNetwork(network - person)
+  }
 
-  def remove(person: String): Unit = network = network - person
+  def friend(a: String, b: String): SocialNetwork =
+    SocialNetwork(network + (a -> (network(a) + b)) + (b -> (network(b) + a)))
 
-  def friend(a: String, b: String): Unit =
-    network = network + (a -> (network(a) + b)) + (b -> (network(b) + a))
-
-  def unfriend(a: String, b: String): Unit =
-    network = network + (a -> (network(a) - b)) +  (b -> (network(b) - a))
+  def unfriend(a: String, b: String): SocialNetwork =
+    SocialNetwork(network + (a -> (network(a) - b)) +  (b -> (network(b) - a)))
 
   def friendsCount(person: String): Int = network(person).size
 
