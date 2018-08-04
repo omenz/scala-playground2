@@ -81,7 +81,8 @@ object SocialNetworkApp extends App {
 
   println(SocialNetwork.peopleWithNoFriendsCount)
 
-
+  println(SocialNetwork.isThereAConnection("Peter", "John"))
+  println(SocialNetwork.isThereAConnection("Peter", "Bob"))
 }
 
 
@@ -93,16 +94,11 @@ object SocialNetwork {
 
   def remove(person: String): Unit = network = network - person
 
-  def friend(requester: String, recipient: String): Unit = {
-    network = network + (requester -> (network(requester) + recipient))
-    network = network + (recipient -> (network(recipient) + requester))
+  def friend(a: String, b: String): Unit =
+    network = network + (a -> (network(a) + b)) + (b -> (network(b) + a))
 
-  }
-
-  def unfriend(requester: String, recipient: String): Unit = {
-    network = network + (requester -> (network(requester) - recipient))
-    network = network + (recipient -> (network(recipient) - requester))
-  }
+  def unfriend(a: String, b: String): Unit =
+    network = network + (a -> (network(a) - b)) +  (b -> (network(b) - a))
 
   def friendsCount(person: String): Int = network(person).size
 
@@ -110,7 +106,12 @@ object SocialNetwork {
 
   def peopleWithNoFriendsCount: Int = network.count(_._2.isEmpty)
 
-  def isThereAConnection(person1: String, person2: String): Boolean = ???
+  def isThereAConnection(person1: String, person2: String): Boolean = {
+    if (network(person1).contains(person2)) true
+    else network(person1)
+      .flatMap(network(_))
+      .contains(person2)
+  }
 
   def print(): Unit = println(network)
 
