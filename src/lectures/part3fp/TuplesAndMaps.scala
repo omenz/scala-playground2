@@ -64,13 +64,14 @@ object SocialNetworkApp extends App {
   network = network.add("Bob")
   network.print()
 
-  network = network.remove("Sue")
-  network.print()
-
   network = network.friend("Peter", "John")
   network = network.friend("Peter", "Jenny")
+  network = network.friend("Peter", "Sue")
   network = network.friend("Peter", "Chloe")
   network = network.friend("John", "Jenny")
+  network.print()
+
+  network = network.remove("Sue")
   network.print()
 
   network = network.unfriend("Jenny", "Peter")
@@ -83,8 +84,8 @@ object SocialNetworkApp extends App {
 
   println(network.peopleWithNoFriendsCount)
 
-  println(network.isThereAConnection("Peter", "John"))
-  println(network.isThereAConnection("Peter", "Bob"))
+//  println(network.isThereAConnection("Peter", "John"))
+//  println(network.isThereAConnection("Peter", "Bob"))
 }
 
 
@@ -93,7 +94,11 @@ case class SocialNetwork(network: Map[String, Set[String]] = Map()) {
   def add(person: String): SocialNetwork = SocialNetwork(network + (person -> Set()))
 
   def remove(person: String): SocialNetwork = {
-    SocialNetwork(network - person)
+    def removeAux(friends: Set[String], networkAcc: SocialNetwork): SocialNetwork =
+      if (friends.isEmpty) networkAcc
+      else removeAux(friends.tail, networkAcc.unfriend(person, friends.head))
+    val unfriended = removeAux(network(person), this)
+    SocialNetwork(unfriended.network - person)
   }
 
   def friend(a: String, b: String): SocialNetwork =
