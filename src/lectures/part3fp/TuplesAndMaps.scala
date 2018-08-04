@@ -64,6 +64,7 @@ object SocialNetworkApp extends App {
   network = network.add("Jenny")
   network = network.add("Chloe")
   network = network.add("Bob")
+  network = network.add("Amy")
   network.print()
 
   network = network.friend("Peter", "John")
@@ -71,6 +72,7 @@ object SocialNetworkApp extends App {
   network = network.friend("Peter", "Sue")
   network = network.friend("Peter", "Chloe")
   network = network.friend("John", "Jenny")
+  network = network.friend("John", "Bob")
   network.print()
 
   network = network.remove("Sue")
@@ -86,8 +88,9 @@ object SocialNetworkApp extends App {
 
   println(network.peopleWithNoFriendsCount)
 
-//  println(network.isThereAConnection("Peter", "John"))
-//  println(network.isThereAConnection("Peter", "Bob"))
+  println(network.isThereAConnection("Peter", "John"))
+  println(network.isThereAConnection("Peter", "Bob"))
+  println(network.isThereAConnection("Peter", "Amy"))
 }
 
 
@@ -99,7 +102,7 @@ case class SocialNetwork(network: Map[String, Set[String]] = Map()) {
     SocialNetwork(network + (a -> (network(a) + b)) + (b -> (network(b) + a)))
 
   def unfriend(a: String, b: String) =
-    SocialNetwork(network + (a -> (network(a) - b)) +  (b -> (network(b) - a)))
+    SocialNetwork(network + (a -> (network(a) - b)) + (b -> (network(b) - a)))
 
   def remove(person: String): SocialNetwork = {
     @tailrec
@@ -116,11 +119,18 @@ case class SocialNetwork(network: Map[String, Set[String]] = Map()) {
 
   def peopleWithNoFriendsCount: Int = network.count(_._2.isEmpty)
 
-  def isThereAConnection(personA: String, personB: String): Boolean = {
-    if (network(personA).contains(personB)) true
-    else network(personA)
-      .flatMap(network(_))
-      .contains(personB)
+  def isThereAConnection(a: String, b: String): Boolean = {
+    @tailrec
+    def bfs(target: String, tested: Set[String], discovered: Set[String]): Boolean = {
+      if (discovered.isEmpty) false
+      else {
+        val person = discovered.head
+        if (person == target) true
+        else if (tested.contains(person)) bfs(target, tested, discovered.tail)
+        else bfs(target, tested + person, discovered.tail ++ network(person))
+      }
+    }
+    bfs(b, Set(), network(a) + a)
   }
 
   def print(): Unit = println(network)
