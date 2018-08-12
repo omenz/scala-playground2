@@ -1,6 +1,6 @@
 package beginner.lectures.pattern4pm
 
-import excercises.{Cons, Empty, MyList}
+import beginner.excercises.{Cons, Empty, MyList}
 
 
 object AllThePatterns extends App {
