@@ -1,4 +1,4 @@
-package lectures.part3fp
+package beginner.lectures.part3fp
 
 import scala.util.Random
 

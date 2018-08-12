@@ -1,4 +1,4 @@
-package lectures.pattern4pm
+package beginner.lectures.pattern4pm
 
 import excercises.{Cons, Empty, MyList}
 
