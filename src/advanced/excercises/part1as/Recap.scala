@@ -96,9 +96,9 @@ object Recap extends App {
   //pattern matching
   val x = 2
   val order = x match {
-    case 1 => "first",
-    case 2 => "second",
-    case 3 => "third",
+    case 1 => "first"
+    case 2 => "second"
+    case 3 => "third"
     case _ => x + "th"
   }
 
