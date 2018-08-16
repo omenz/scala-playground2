@@ -1,4 +1,4 @@
-package advanced.excercises.part1as
+package advanced.lectures.part1as
 
 import scala.annotation.tailrec
 

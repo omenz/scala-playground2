@@ -1,4 +1,4 @@
-package advanced.excercises.part1as
+package advanced.lectures.part1as
 
 object AdvancedPatternMatching extends App {
 
@@ -134,5 +134,5 @@ object AdvancedPatternMatching extends App {
     case PersonWrapper(n) => s"This person's name is $n"
     case _ => "An alien"
   })
-  
+
 }
