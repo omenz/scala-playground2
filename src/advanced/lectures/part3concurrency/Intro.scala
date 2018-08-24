@@ -128,8 +128,9 @@ object Intro extends App {
   val threads = (1 to 100).map(_ => new Thread(() => x += 1))
   threads.foreach(_.start())
   /*
-    1) what is the biggest value possible for x?
-    2) what is the SMALLEST value possible for x?
+    1) what is the biggest value possible for x? 100
+    2) what is the SMALLEST value possible for x? 1 - all threads will read 0 and increment it by 1
+    
    */
   var message = ""
   val awesomeThread = new Thread(() => {
@@ -137,15 +138,27 @@ object Intro extends App {
     message = "Scala is awesome"
   })
 
-  message = "Acala sucks"
+  message = "Scala sucks"
   awesomeThread.start()
-  Thread.sleep(2000)
+  Thread.sleep(2000)//yields execution for AT LEAST 2 seconds, and can yield even for more
   println(message)
   /*
-    what's the value of message?
-    is it guaranteed?
+    what's the value of message? almost always "Scala is awesome"
+    is it guaranteed? NO!
     why? why not?
+
+    (main thread)
+      message = "Scala sucks"
+      awesomeThread.start()
+      sleep() - relieves execution
+    (awesome thread)
+      sleep() - relieves execution
+    (OS gives the CPU to some important thread - takes CPU for more than 2 seconds)
+    (OS gives the CPU back to the MAIN thread)
+      println("Scala sucks")
+    (OS gives the CPU to awesomethread)
+      message = "Scala is awesome"
    */
 
-
+   // to fix this, use awesomeThread.join() before println(message)
 }
