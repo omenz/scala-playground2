@@ -215,6 +215,65 @@ object ThreadCommunication extends App {
     (1 to nProducers).foreach(i => new Producer(i, buffer, capacity).start())
   }
 
-  multiProdCons(3, 6)
+//  multiProdCons(3, 6)
+
+
+  /*
+    Exercises.
+    1) think of an example when notifyAll acts in a different way than notify?
+    2) create a deadlock
+    3) create a livelock(threads yield execution constantly in a way that they cannot continue)
+   */
+
+  /* 1 */
+  def testNotifyAll(): Unit = {
+    val bell = new Object
+    (1 to 10).foreach(i => new Thread(() => {
+      bell.synchronized {
+        println(s"[thread $i] waiting...")
+        bell.wait()
+        println(s"[thread $i] hooray!")
+      }
+    }).start())
+
+    new Thread(() => {
+      Thread.sleep(2000)
+      println("[announcer] Rock'n roll!")
+      bell.synchronized {
+        bell.notifyAll()//try notify and notifyAll
+      }
+    }).start()
+  }
+
+//  testNotifyAll()
+
+
+  /* 2 */
+  def testDeadlock(): Unit = {
+    val someListA = List()
+    val someListB = List()
+
+    val thread1 = new Thread(() => someListA.synchronized {
+      Thread.sleep(500)
+      println("Thread 1 waiting for a list B lock release")
+      someListB.wait()
+      println("Thread 1 finished waiting")
+      someListA.notify()
+    })
+
+    val thread2 = new Thread(() => someListB.synchronized {
+      println("Thread 2 waiting for a list A lock release")
+      someListA.wait()
+      println("Thread 2 finished waiting")
+      someListB.notify()
+    })
+
+    thread1.start()
+    thread2.start()
+  }
+
+//  testDeadlock()
+  
+  /* 3 */
 
 }
