@@ -65,7 +65,7 @@ object ParallelUtils extends App {
    */
 
   aParVector.tasksupport = new TaskSupport {
-    override val environment: AnyRef = _ // manages threads, shares context between threads
+    override val environment: AnyRef = ??? // manages threads, shares context between threads
 
     override def execute[R, Tp](fjtask: Task[R, Tp]): () => R = ???
 
