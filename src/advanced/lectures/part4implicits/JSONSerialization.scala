@@ -2,8 +2,6 @@ package advanced.lectures.part4implicits
 
 import java.util.Date
 
-import advanced.lectures.part4implicits.JSONSerialization.{JSONArray, JSONNumber}
-
 object JSONSerialization extends App {
 
   /*
