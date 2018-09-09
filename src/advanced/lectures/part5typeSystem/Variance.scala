@@ -99,4 +99,69 @@ object Variance extends App {
     - method arguments are in CONTRAVARIANT position
     - return types are in COVARIANT position
    */
+
+  /**
+    * 1. Invariant, covariant, contravariant
+    *   class Parking[T](things: List[T]) {
+    *     park(vehicle: T)
+    *     impound(vehicles: List[T])
+    *     checkVehicles(conditions: String): List[T]
+    *   }
+    *
+    * 2. used someone else's API: IList[T]
+    * 3. Parking = monad
+    *   - flatMap
+    */
+
+  class Vehicles
+  class Bike extends Vehicles
+  class Car extends Vehicles
+
+  class InvariantParking[T](things: List[T]) {
+    def park(vehicle: T): InvariantParking[T] = ???
+    def impound(vehicles: List[T]): InvariantParking[T] = ???
+    def checkVehicles(conditions: String): List[T] = ???
+
+    def flatMap[B](f: T => InvariantParking[B]): InvariantParking[B] = ???
+  }
+
+  class CovariantParking[+T](things: List[T]) {
+    def park[B >: T](vehicle: B): CovariantParking[B] = ???
+    def impound[B >: T](vehicles: List[B]): CovariantParking[B] = ???
+    def checkVehicles(conditions: String): List[T] = ???
+
+    def flatMap[B](f: T => CovariantParking[B]): CovariantParking[B] = ???
+  }
+
+  class ContravariantParking[-T](things: List[T]) {
+    def park(vehicle: T): ContravariantParking[T] = ???
+    def impound(vehicles: List[T]): ContravariantParking[T] = ???
+    def checkVehicles[B <: T](conditions: String): List[B] = ???
+
+    // mind blown, double contravariant position for type argument R which is covariant
+    def flatMap[R <: T, B](f: R => ContravariantParking[B]): ContravariantParking[B] = ???
+  }
+
+
+  /*
+    Rule of thumb
+    - use covariance = COLLECTION OF THINGS
+    - use contravariance = GROUP OF ACTIONS
+   */
+
+  class IList[T]
+
+  class CovariantParking2[+T](things: List[T]) {
+    def park[B >: T](vehicle: B): CovariantParking2[B] = ???
+    def impound[B >: T](vehicles: IList[B]): CovariantParking2[B] = ???
+    def checkVehicles[B >: T](conditions: String): IList[B] = ???
+  }
+
+  class ContravariantParking2[-T](things: List[T]) {
+    def park(vehicle: T): ContravariantParking2[T] = ???
+    def impound[B <: T](vehicles: IList[B]): ContravariantParking2[B] = ???
+    def checkVehicles[B <: T](conditions: String): IList[B] = ???
+  }
+
+  // flatMap
 }
