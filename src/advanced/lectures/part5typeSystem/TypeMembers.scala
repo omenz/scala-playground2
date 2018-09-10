@@ -54,11 +54,11 @@ object TypeMembers extends App {
 
 
   // NOT OK
-  class CustomList(hd: String, tl: CustomList) extends MList with ApplicableToNumbers {
-    type A = String
-    def head = hd
-    def tail = tl
-  }
+//  class CustomList(hd: String, tl: CustomList) extends MList with ApplicableToNumbers {
+//    type A = String
+//    def head = hd
+//    def tail = tl
+//  }
 
   //OK
   class IntList(hd: Int, tl: IntList) extends MList {
