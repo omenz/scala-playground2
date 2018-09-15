@@ -1,4 +1,5 @@
 package advanced.lectures.part5typeSystem
+import scala.collection.immutable
 
 object Reflection extends App {
 
@@ -41,5 +42,55 @@ object Reflection extends App {
   
   method.apply()
 
+  // type erasure
 
+  // pp(pain point) #1: differentiate types at runtime
+  val numbers = List(1,2,3)
+  numbers match {
+    case listOfStrings: List[String] => println("list of strings")// type erasure
+    case listOfNumbers: List[Int] => println("list of numbers")
+  }
+
+  // pp #2: limitations on overloads
+//  def processList(list: List[Int]): Int = 43
+//  def processList(list: List[String]): Int = 45  // identical definition after type erasure
+
+  // TypeTags
+  // 0 - import
+  import ru._
+
+  // 1 - crating a type tag "manually"
+  val ttag = typeTag[Person]
+  println(ttag.tpe)
+
+  class MyMap[K, V]
+
+  // 2 - pass type tags as implicit parameters
+  def getTypeArguments[T](value: T)(implicit typeTag: TypeTag[T]): immutable.Seq[ru.Type] =
+    typeTag.tpe match {
+      case TypeRef(_, _, typeArguments) => typeArguments
+      case _ => List()
+    }
+
+  val myMap = new MyMap[Int, String]
+  val typeArgs = getTypeArguments(myMap)//(typeTag: TypeTag[MyMap[Int, String]])
+  println(typeArgs)
+
+  def isSubType[A, B](implicit ttagA: TypeTag[A], ttagB: TypeTag[B]): Boolean = {
+    ttagA.tpe <:< ttagB.tpe
+  }
+
+  class Animal
+  class Dog extends Animal
+  println(isSubType[Dog, Animal])
+
+
+
+  // another way to get method symbol
+  // 3 - method symbol
+  val anotherMethodSymbol = typeTag[Person].tpe.decl(ru.TermName(methodName)).asMethod
+  // 4 - reflect the method
+  val someMethod = reflected.reflectMethod(anotherMethodSymbol)
+  // 5 - invoke
+  someMethod.apply()
 }
